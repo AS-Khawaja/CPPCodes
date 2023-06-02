@@ -1,0 +1,137 @@
+#include<iostream>
+using namespace std;
+
+class Date {
+protected: 
+    int year;
+    int month;
+    int day;
+
+    public:
+        Date(int a=0, int b=0, int c=0)
+        {
+            year = a;
+            month = b;
+            day = c;
+        }
+        void addDay(int a)
+        {
+            day+= a;
+        }
+        void addMonth(int a)
+        {
+            month+= a;
+        }
+        void addYear(int a)
+        {
+            year += a;
+        }
+        int Getday()
+        {
+            return day;
+        }
+        int GetMonth()
+        {
+            return month;
+        }
+        int Getyear()
+        {
+            return year;
+        }
+
+
+        void print()
+        {
+            cout << day << "/" << month << "/" << year<<endl;
+        }
+};
+class Event {
+protected:   
+    string title;
+    Date date;
+
+public:
+    Event(string t, const Date& obj)
+    {
+        title = t;
+        date = obj;
+    }
+    virtual void print()
+    {
+        date.print();
+        cout << title;
+    }
+
+};
+
+class RecurringEvent : public Event 
+{ 
+    public:
+        RecurringEvent(string t, const Date& obj):Event(t,obj){}
+        virtual Event** occurrences(int) = 0;
+};
+
+class DailyEvent:public RecurringEvent
+{
+public:
+    DailyEvent(string t,const Date& obj):RecurringEvent(t,obj){}
+    Event** occurrences(int x)
+    {
+        Event** event = new Event * [x];
+        for (int i = 0; i < x; i++)
+        {
+            event[i] = new DailyEvent(title,Date(date.Getyear(),date.GetMonth(),date.Getday()+i));
+        }
+        return event;
+    }
+    
+};
+
+class WeeklyEvent :public RecurringEvent
+{
+public:
+    WeeklyEvent(string t, const Date& obj) :RecurringEvent(t, obj) {}
+    Event** occurrences(int x)
+    {
+        Event** event = new Event * [x];
+        for (int i = 0; i < x; i++)
+        {
+            event[i] = new WeeklyEvent(title, Date(date.Getyear(), date.GetMonth(), date.Getday() + (i*7)));
+        }
+        return event;
+    }
+};
+class  MonthlyEvent :public RecurringEvent
+{
+public:
+    MonthlyEvent(string t, const Date& obj) :RecurringEvent(t, obj) {}
+    Event** occurrences(int x)
+    {
+        Event** event = new Event * [x];
+        for (int i = 0; i < x; i++)
+        {
+            event[i] = new MonthlyEvent(title, Date(date.Getyear(), date.GetMonth()+i, date.Getday()));
+        }
+        return event;
+    }
+};
+
+
+int main() {
+    RecurringEvent** rec = new RecurringEvent * [3];
+    rec[0] = new DailyEvent("client meeting", Date(2022, 06, 8));
+    rec[1] = new WeeklyEvent("lecture", Date(2022, 06, 8));
+    rec[2] = new MonthlyEvent("project monitoring", Date(2022, 06, 8));
+    for (int i = 0; i < 3; i++) 
+    { 
+        Event** occurr = rec[i]->occurrences(3);
+        for (int j = 0; j < 3; j++) 
+        { 
+            occurr[j]->print();
+            cout << endl;
+        } 
+    }
+
+        return 0; 
+}
+
